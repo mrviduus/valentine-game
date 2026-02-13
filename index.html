@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>You've Got My Heart</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-wrapper">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <div id="overlay" class="overlay">
+      <p id="overlay-text"></p>
+      <button id="overlay-btn" class="btn" style="display:none;"></button>
+    </div>
+
+    <div id="email-overlay" class="overlay" style="display:none;">
+      <div id="email-box">
+        <div id="email-header">
+          <span class="email-label">From:</span> Someone who means it<br>
+          <span class="email-label">To:</span> You<br>
+          <span class="email-label">Subject:</span> <strong>The Only Message That Matters</strong>
+        </div>
+        <div id="email-body">
+          <p>I built this little world<br>because every heart you collected<br>represents something real.</p>
+          <p>A memory.<br>A laugh.<br>A quiet moment.</p>
+          <p>And if I could choose again...<br>I would still choose you.</p>
+          <p>Happy Valentine's Day ❤️</p>
+        </div>
+        <button id="reply-btn" class="btn">Reply</button>
+      </div>
+    </div>
+
+    <div id="ending-overlay" class="overlay" style="display:none;">
+      <p id="ending-text">Status: Together.<br>Next chapter loading...</p>
+      <canvas id="heartsCanvas" width="800" height="600"></canvas>
+    </div>
+  </div>
+
+  <div id="mobile-controls">
+    <button class="ctrl-btn" data-dir="up">&#9650;</button>
+    <div class="ctrl-row">
+      <button class="ctrl-btn" data-dir="left">&#9664;</button>
+      <button class="ctrl-btn" data-dir="down">&#9660;</button>
+      <button class="ctrl-btn" data-dir="right">&#9654;</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
