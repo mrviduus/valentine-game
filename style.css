@@ -14,6 +14,11 @@ body {
   font-family: 'Segoe UI', system-ui, sans-serif;
   color: #3a3a3a;
   overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 #game-wrapper {
@@ -118,6 +123,51 @@ body {
   margin: 0 24px 24px;
 }
 
+/* Photo card */
+#photo-overlay {
+  background: rgba(20, 10, 15, 0.85);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+#photo-overlay[style*="display: flex"] {
+  /* handled via JS opacity */
+}
+
+#photo-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 10px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+  max-width: 420px;
+  width: 85%;
+  transform: rotate(-2deg);
+}
+
+#photo-img {
+  width: 100%;
+  border-radius: 10px;
+  display: block;
+}
+
+#photo-character {
+  position: absolute;
+  bottom: 20px;
+  right: 30px;
+  width: 100px;
+  pointer-events: none;
+}
+
+#photo-btn {
+  background: #fff;
+  color: #ff4d6d;
+  font-weight: 600;
+}
+
+#photo-btn:hover {
+  background: #ffe0e6;
+}
+
 /* Ending */
 #ending-overlay {
   background: rgba(20, 10, 15, 0.92);
@@ -137,43 +187,17 @@ body {
   z-index: 1;
 }
 
-/* Mobile controls */
-#mobile-controls {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  margin-top: 16px;
-}
-
-.ctrl-row {
-  display: flex;
-  gap: 4px;
-}
-
-.ctrl-btn {
-  width: 56px;
-  height: 56px;
-  font-size: 1.4rem;
-  background: #ff4d6d;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.ctrl-btn:active {
-  background: #e0435f;
-}
-
 /* Responsive */
 @media (max-width: 840px) {
+  body {
+    justify-content: flex-start;
+    padding-top: 8px;
+  }
+
   #game-wrapper {
     width: 100vw;
     height: calc(100vw * 0.75);
-    max-height: 600px;
+    max-height: 50vh;
   }
 
   #gameCanvas {
@@ -184,13 +208,39 @@ body {
 
   .overlay {
     border-radius: 0;
-  }
-
-  #mobile-controls {
-    display: flex;
+    padding: 20px;
   }
 
   #overlay-text {
+    font-size: 1.1rem;
+  }
+
+  .btn {
+    padding: 14px 40px;
+    font-size: 1.15rem;
+  }
+
+  #email-box {
+    max-width: 95%;
+    max-height: 80%;
+    overflow-y: auto;
+  }
+
+  #email-header {
+    padding: 14px 16px;
+    font-size: 0.85rem;
+  }
+
+  #email-body {
+    padding: 16px;
+    font-size: 0.95rem;
+  }
+
+  #ending-text {
     font-size: 1.2rem;
+  }
+
+  #photo-card {
+    max-width: 300px;
   }
 }
