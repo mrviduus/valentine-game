@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#fdf6f0">
   <title>You've Got My Heart</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -38,6 +41,11 @@
       </div>
       <img id="photo-character" src="charecter.png" alt="">
       <button id="photo-btn" class="btn">Continue</button>
+    </div>
+
+    <div id="death-overlay" class="overlay" style="display:none;">
+      <p id="death-text">You ran out of lives...</p>
+      <button id="death-btn" class="btn">Try Again</button>
     </div>
 
     <div id="ending-overlay" class="overlay" style="display:none;">

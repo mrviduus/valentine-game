@@ -31,10 +31,10 @@ const MAX_LIVES = 5;
 
 // ─── Level Config ───
 const LEVELS = [
-  { required: 5, intro: 'Every story starts somewhere.', end: 'Ours started with a moment.', obstacleChance: 0.2, moving: false, runSpeed: 3, gapSize: 'normal' },
-  { required: 8, intro: 'Small things became big memories.', end: "That's when I knew...", obstacleChance: 0.35, moving: false, runSpeed: 3.5, gapSize: 'normal' },
-  { required: 10, intro: 'Love is choosing each other.', end: 'And we keep choosing.', obstacleChance: 0.45, moving: true, runSpeed: 4, gapSize: 'wider' },
-  { required: 12, intro: 'Somewhere along the way... we became "us."', end: 'And "us" became my favorite place.', obstacleChance: 0.55, moving: true, runSpeed: 4.5, gapSize: 'wider' },
+  { required: 10, intro: 'Every story starts somewhere.', end: 'Ours started with a moment.', obstacleChance: 0.2, moving: false, runSpeed: 3, gapSize: 'normal' },
+  { required: 13, intro: 'Small things became big memories.', end: "That's when I knew...", obstacleChance: 0.35, moving: false, runSpeed: 3.5, gapSize: 'normal' },
+  { required: 16, intro: 'Love is choosing each other.', end: 'And we keep choosing.', obstacleChance: 0.45, moving: true, runSpeed: 4, gapSize: 'wider' },
+  { required: 19, intro: 'Somewhere along the way... we became "us."', end: 'And "us" became my favorite place.', obstacleChance: 0.55, moving: true, runSpeed: 4.5, gapSize: 'wider' },
   { required: 1, intro: 'Some things are worth holding onto.', end: null, obstacleChance: 0.15, moving: false, runSpeed: 3, gapSize: 'normal' },
 ];
 
@@ -55,6 +55,21 @@ let player = { x: 0, y: 0, vy: 0, grounded: false };
 let worldX = 0;
 let lastPlatEndX = 0;
 
+// ─── Sprite Animation ───
+const spriteImg = new Image();
+let frameW = 0, frameH = 0;
+spriteImg.onload = () => { frameW = spriteImg.width / 5; frameH = spriteImg.height / 2; };
+spriteImg.src = 'animations.png';
+
+const RUN_FRAMES = [[0,0],[1,0],[2,0],[3,0],[0,1],[1,1],[2,1],[3,1]];
+const JUMP_FRAME = [4,1];
+const COLLECT_FRAME = [4,0];
+const ANIM_SPEED = 7;
+
+let animTick = 0;
+let animFrameIndex = 0;
+let collectTimer = 0;
+
 // ─── DOM ───
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -66,6 +81,8 @@ const replyBtn = document.getElementById('reply-btn');
 const photoOverlay = document.getElementById('photo-overlay');
 const photoImg = document.getElementById('photo-img');
 const photoBtn = document.getElementById('photo-btn');
+const deathOverlay = document.getElementById('death-overlay');
+const deathBtn = document.getElementById('death-btn');
 const endingOverlay = document.getElementById('ending-overlay');
 const heartsCanvas = document.getElementById('heartsCanvas');
 const heartsCtx = heartsCanvas.getContext('2d');
@@ -205,6 +222,9 @@ function resetWorld() {
   player.grounded = true;
   jumpPressed = false;
   jumpConsumed = false;
+  animTick = 0;
+  animFrameIndex = 0;
+  collectTimer = 0;
   initClouds();
   initHills();
   ensureWorld();
@@ -225,24 +245,43 @@ function drawHeart(cx, cy, size, color) {
 }
 
 function drawPlayer(screenX, screenY) {
-  ctx.beginPath();
-  ctx.arc(screenX, screenY, PLAYER_R, 0, Math.PI * 2);
-  ctx.fillStyle = PLAYER_COLOR;
-  ctx.fill();
+  if (!frameW) {
+    // Fallback pink circle while sprite loads
+    ctx.beginPath();
+    ctx.arc(screenX, screenY, PLAYER_R, 0, Math.PI * 2);
+    ctx.fillStyle = PLAYER_COLOR;
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(screenX - 5, screenY - 3, 3, 0, Math.PI * 2);
+    ctx.arc(screenX + 5, screenY - 3, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(screenX, screenY + 4, 5, 0, Math.PI);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    return;
+  }
 
-  // Eyes
-  ctx.fillStyle = '#fff';
-  ctx.beginPath();
-  ctx.arc(screenX - 5, screenY - 3, 3, 0, Math.PI * 2);
-  ctx.arc(screenX + 5, screenY - 3, 3, 0, Math.PI * 2);
-  ctx.fill();
+  // Pick frame
+  let frame;
+  if (collectTimer > 0) {
+    frame = COLLECT_FRAME;
+  } else if (!player.grounded) {
+    frame = JUMP_FRAME;
+  } else {
+    frame = RUN_FRAMES[animFrameIndex];
+  }
 
-  // Smile
-  ctx.beginPath();
-  ctx.arc(screenX, screenY + 4, 5, 0, Math.PI);
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
+  const drawSize = PLAYER_R * 2.5;
+  const sx = frame[0] * frameW;
+  const sy = frame[1] * frameH;
+
+  ctx.save();
+  ctx.translate(screenX, screenY + PLAYER_R - drawSize);
+  ctx.drawImage(spriteImg, sx, sy, frameW, frameH, -drawSize / 2, 0, drawSize, drawSize);
+  ctx.restore();
 }
 
 function drawSky() {
@@ -487,6 +526,7 @@ function update() {
     if (dist < PLAYER_R + h.r) {
       h.collected = true;
       heartsCollected++;
+      collectTimer = 20;
     }
   }
 
@@ -504,16 +544,20 @@ function update() {
       invincibleTimer = INVINCIBLE_FRAMES;
       if (lives <= 0) {
         state = 'gameover';
-        showOverlay('You ran out of lives...', 'Try Again', () => {
-          resetWorld();
-          heartsCollected = 0;
-          state = 'playing';
-        });
+        showDeathScreen();
         return;
       }
     }
   }
   if (invincibleTimer > 0) invincibleTimer--;
+
+  // Animation tick
+  animTick++;
+  if (animTick >= ANIM_SPEED) {
+    animTick = 0;
+    animFrameIndex = (animFrameIndex + 1) % RUN_FRAMES.length;
+  }
+  if (collectTimer > 0) collectTimer--;
 
   // Fell off bottom → respawn
   if (player.y > CANVAS_H + 50) {
@@ -673,6 +717,21 @@ function startLevel() {
     heartsCollected = 0;
     state = 'playing';
   });
+}
+
+function showDeathScreen() {
+  deathOverlay.style.display = 'flex';
+  setTimeout(() => { deathOverlay.style.opacity = '1'; }, 10);
+
+  deathBtn.onclick = () => {
+    deathOverlay.style.opacity = '0';
+    setTimeout(() => {
+      deathOverlay.style.display = 'none';
+      resetWorld();
+      heartsCollected = 0;
+      state = 'playing';
+    }, 600);
+  };
 }
 
 function showFinalIntro() {
